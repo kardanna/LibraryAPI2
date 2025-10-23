@@ -27,33 +27,41 @@ public class LibraryRepository : ILibraryRepository
 
     public void DeleteAuthor(int id)
     {
-        if (!Authors.ContainsKey(id)) throw new EntityDoesNotExistException(nameof(Author), id);
-
-        var removedBooks = new Dictionary<int, Book>();
-        var bookIdsToRemove = Books.Where(b => b.Value.AuthorId == id).Select(b => b.Value.Id);
-        
-        foreach (var bookId in bookIdsToRemove)
+        if (!Authors.TryGetValue(id, out Author? author))
         {
-            if (Books.TryRemove(bookId, out Book? removedBook))
-            {
-                removedBooks.Add(removedBook.Id, removedBook);
-                continue;
-            }
-
-            foreach (var book in removedBooks)
-            {
-                Books.TryAdd(book.Value.Id, book.Value);
-            }
-            throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Delete); //RepositoryUpdateException($"Failed to performe cascade delete of all books by author with ID {id}");
+            throw new EntityDoesNotExistException(nameof(Author), id);
         }
-        
-        if (!Authors.TryRemove(id, out _))
+
+        lock (author.EntityLock)
         {
-            foreach (var book in removedBooks)
+            if(!Authors.ContainsKey(id)) throw new EntityDoesNotExistException(nameof(Author), id);
+
+            var removedBooks = new Dictionary<int, Book>();
+            var bookIdsToRemove = Books.Where(b => b.Value.AuthorId == id).Select(b => b.Value.Id);
+
+            foreach (var bookId in bookIdsToRemove)
             {
-                Books.TryAdd(book.Value.Id, book.Value);
+                if (Books.TryRemove(bookId, out Book? removedBook))
+                {
+                    removedBooks.Add(removedBook.Id, removedBook);
+                    continue;
+                }
+
+                foreach (var book in removedBooks)
+                {
+                    Books.TryAdd(book.Value.Id, book.Value);
+                }
+                throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Delete);
             }
-            throw new RepositoryUpdateException(nameof(Author), RepositoryOperation.Delete); //RepositoryUpdateException($"Failed to delete author with ID {id}");
+
+            if (!Authors.TryRemove(id, out _))
+            {
+                foreach (var book in removedBooks)
+                {
+                    Books.TryAdd(book.Value.Id, book.Value);
+                }
+                throw new RepositoryUpdateException(nameof(Author), RepositoryOperation.Delete);
+            }
         }
     }
 
@@ -79,8 +87,10 @@ public class LibraryRepository : ILibraryRepository
             throw new EntityDoesNotExistException(nameof(Author), entry.Id);
         }
 
-        lock (existingEntry)
+        lock (existingEntry.EntityLock)
         {
+            if (!Authors.ContainsKey(entry.Id)) throw new EntityDoesNotExistException(nameof(Author), entry.Id);
+            
             existingEntry.Name = entry.Name;
             existingEntry.DateOfBirth = entry.DateOfBirth;
         }
@@ -93,36 +103,43 @@ public class LibraryRepository : ILibraryRepository
             throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
         }
 
-        int id = Interlocked.Increment(ref _booksSequence);
-        entry.Id = id;
-        entry.Author = author;
-
-        if (Books.TryAdd(id, entry))
+        lock (author.EntityLock)
         {
-            lock (entry.Author.Books)
+            if (!Authors.ContainsKey(entry.AuthorId)) throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
+
+            int id = Interlocked.Increment(ref _booksSequence);
+            entry.Id = id;
+            entry.Author = author;
+
+            if (!Books.TryAdd(id, entry))
             {
-                entry.Author.Books.Add(entry);
+                throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Add);
             }
+
+            entry.Author.Books.Add(entry);
+
             return entry.Id;
         }
-        
-        throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Add); //RepositoryUpdateException($"Failed to add book '{entry.Title}'");
     }
 
     public void DeleteBook(int id)
     {
-        if (!Books.ContainsKey(id)) throw new EntityDoesNotExistException(nameof(Book), id);
-
-        if (Books.TryRemove(id, out Book? book))
+        if (!Books.TryGetValue(id, out Book? book))
         {
-            lock (book.Author.Books)
-            {
-                book.Author.Books.Remove(book);
-            }
-            return;
+            throw new EntityDoesNotExistException(nameof(Book), id);
         }
-        
-        throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Delete); //RepositoryUpdateException($"Failed to delete book with ID {id}");
+
+        lock (book.Author.EntityLock)
+        {
+            if (!Books.ContainsKey(id)) throw new EntityDoesNotExistException(nameof(Book), id);
+
+            if (!Books.TryRemove(id, out _))
+            {
+                throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Delete);
+            }
+
+            book.Author.Books.Remove(book);
+        }
     }
 
     public IEnumerable<Book> GetAllBooks()
@@ -142,22 +159,44 @@ public class LibraryRepository : ILibraryRepository
 
     public void UpdateBook(Book entry)
     {
-        if (!Books.TryGetValue(entry.Id, out Book? existingEntry))
+        if (!Books.TryGetValue(entry.Id, out Book? bookToUpdate))
         {
             throw new EntityDoesNotExistException(nameof(Book), entry.Id);
         }
-        
-        if (!Authors.TryGetValue(entry.AuthorId, out Author? author))
-        {
-            throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
-        }
 
-        lock (existingEntry)
+        if (entry.AuthorId == bookToUpdate.AuthorId)
         {
-            existingEntry.Title = entry.Title;
-            existingEntry.PublishedYear = entry.PublishedYear;
-            existingEntry.AuthorId = entry.AuthorId;
-            existingEntry.Author = author;
+            lock (bookToUpdate.Author.EntityLock)
+            {
+                if (!Books.ContainsKey(entry.Id)) throw new EntityDoesNotExistException(nameof(Book), entry.Id);
+
+                bookToUpdate.Title = entry.Title;
+                bookToUpdate.PublishedYear = entry.PublishedYear;
+            }
+        }
+        else
+        {
+            if (!Authors.TryGetValue(entry.AuthorId, out Author? newAuthor))
+            {
+                throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
+            }
+
+            var outerLock = bookToUpdate.AuthorId < newAuthor.Id ? bookToUpdate.Author.EntityLock : newAuthor.EntityLock;
+            var innerLock = bookToUpdate.AuthorId < newAuthor.Id ? newAuthor.EntityLock : bookToUpdate.Author.EntityLock;
+
+            lock (outerLock)
+                lock (innerLock)
+                {
+                    if (!Books.ContainsKey(entry.Id)) throw new EntityDoesNotExistException(nameof(Book), entry.Id);
+                    if (!Authors.ContainsKey(entry.AuthorId)) throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
+
+                    bookToUpdate.Author.Books.Remove(bookToUpdate);
+                    bookToUpdate.Title = entry.Title;
+                    bookToUpdate.PublishedYear = entry.PublishedYear;
+                    bookToUpdate.AuthorId = entry.AuthorId;
+                    bookToUpdate.Author = newAuthor;
+                    bookToUpdate.Author.Books.Add(bookToUpdate);
+                }
         }
     }
 }
