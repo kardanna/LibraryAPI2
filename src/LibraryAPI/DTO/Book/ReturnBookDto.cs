@@ -8,7 +8,7 @@ public class ReturnBookDto
     public int AuthorId { get; set; }
     public string AuthorName { get; set; } = null!;
 
-    public ReturnBookDto(Models.Book book)
+    public ReturnBookDto(Domain.Book book)
     {
         Id = book.Id;
         Title = book.Title;

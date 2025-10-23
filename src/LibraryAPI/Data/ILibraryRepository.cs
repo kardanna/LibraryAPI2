@@ -1,4 +1,4 @@
-using LibraryAPI.Models;
+using LibraryAPI.Domain;
 
 namespace LibraryAPI.Data;
 

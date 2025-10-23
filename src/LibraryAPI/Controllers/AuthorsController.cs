@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using LibraryAPI.Models;
+using LibraryAPI.Domain;
 using LibraryAPI.DTO.Author;
 using LibraryAPI.DTO.Author.Validators;
 using LibraryAPI.Data;

@@ -7,7 +7,7 @@ public class ReturnAuthorDto
     public DateOnly DateOfBirth { get; set; }
     public int BooksPublished { get; set; }
 
-    public ReturnAuthorDto(Models.Author author)
+    public ReturnAuthorDto(Domain.Author author)
     {
         Id = author.Id;
         Name = author.Name;
