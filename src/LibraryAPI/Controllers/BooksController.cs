@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using LibraryAPI.Domain;
 using LibraryAPI.Application.DTO.Book;
-using LibraryAPI.Application.Validators.Book;
-using LibraryAPI.Data;
-using LibraryAPI.Exceptions;
+using LibraryAPI.Application.Services;
 
 namespace LibraryAPI.Controllers
 {
@@ -11,126 +8,43 @@ namespace LibraryAPI.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly ILibraryRepository _repository;
+        private readonly IBookService _bookService;
 
-        public BooksController(ILibraryRepository repository)
+        public BooksController(IBookService bookService)
         {
-            _repository = repository;
+            _bookService = bookService;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<ReturnBookDto>> GetBooks()
         {
-            var books = _repository.GetAllBooks().Select(b => new ReturnBookDto(b)).ToList();
-            return books;
+            return _bookService.GetAllBooks().ToList();
         }
 
         [HttpGet("{id:int:min(1)}")]
         public ActionResult<ReturnBookDto> GetBook(int id)
         {
-            Book book;
-            try
-            {
-                book = _repository.GetBook(id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { errorMessage = e.Message });
-            }
-
-            return new ReturnBookDto(book);
+            return _bookService.GetBook(id);
         }
 
         [HttpPut("{id:int:min(1)}")]
         public IActionResult PutBook(int id, CreateBookDto bookDto)
         {
-            var validator = new CreateBookDtoValidator();
-            var validationResult = validator.Validate(bookDto);
-            if(!validationResult.IsValid)
-            {
-                var errors = validationResult.Errors.Select(e => new
-                {
-                    errorCode = e.ErrorCode,
-                    errorMessage = e.ErrorMessage
-                });
-                return BadRequest(new { errors });
-            }            
-
-            var book = new Book()
-            {
-                Id = id,
-                Title = bookDto.Title,
-                PublishedYear = bookDto.PublishedYear,
-                AuthorId = bookDto.AuthorId
-            };
-
-            try
-            {
-                _repository.UpdateBook(book);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { errorMessage = e.Message });
-            }
-
+            _bookService.UpdateBook(id, bookDto);
             return NoContent();
         }
 
         [HttpPost]
         public ActionResult<ReturnBookDto> PostBook(CreateBookDto bookDto)
         {
-            var validator = new CreateBookDtoValidator();
-            var validationResult = validator.Validate(bookDto);
-            if(!validationResult.IsValid)
-            {
-                var errors = validationResult.Errors.Select(e => new
-                {
-                    errorCode = e.ErrorCode,
-                    errorMessage = e.ErrorMessage
-                });
-                return BadRequest(new { errors });
-            }
-            
-            var book = new Book()
-            {
-                Title = bookDto.Title,
-                PublishedYear = bookDto.PublishedYear,
-                AuthorId = bookDto.AuthorId
-            };
-
-            try
-            {
-                book.Id = _repository.AddBook(book);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { errorMessage = e.Message });
-            }
-            catch(RepositoryUpdateException e)
-            {
-                return StatusCode(500, new { errorMessage = e.Message });
-            }
-
-            var returnBook = new ReturnBookDto(book);
-            return CreatedAtAction("GetBook", new { id = book.Id }, returnBook);
+            var createdBook = _bookService.AddBook(bookDto);
+            return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook);
         }
 
         [HttpDelete("{id:int:min(1)}")]
         public IActionResult DeleteBook(int id)
         {
-            try
-            {
-                _repository.DeleteBook(id);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { errorMessage = e.Message });
-            }
-            catch (RepositoryUpdateException e)
-            {
-                return StatusCode(500, new { errorMessage = e.Message });
-            }
-
+            _bookService.DeleteBook(id);
             return NoContent();
         }
     }

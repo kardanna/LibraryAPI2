@@ -1,8 +1,9 @@
 using LibraryAPI.Domain;
 using System.Collections.Concurrent;
-using LibraryAPI.Exceptions;
+using LibraryAPI.Application;
+using LibraryAPI.Application.Interfaces;
 
-namespace LibraryAPI.Data;
+namespace LibraryAPI.Infrastructure;
 
 public class LibraryRepository : ILibraryRepository
 {

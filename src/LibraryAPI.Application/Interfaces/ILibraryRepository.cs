@@ -1,6 +1,6 @@
 using LibraryAPI.Domain;
 
-namespace LibraryAPI.Data;
+namespace LibraryAPI.Application.Interfaces;
 
 public interface ILibraryRepository
 {

@@ -1,4 +1,6 @@
-using LibraryAPI.Data;
+using LibraryAPI.Infrastructure;
+using LibraryAPI.Application.Interfaces;
+using LibraryAPI.Application.Services;
 
 namespace LibraryAPI;
 
@@ -15,6 +17,8 @@ public class Program
         builder.Services.AddSwaggerGen();
         
         builder.Services.AddSingleton<ILibraryRepository, LibraryRepository>();
+        builder.Services.AddTransient<IBookService, BookService>();
+        builder.Services.AddTransient<IAuthorService, AuthorService>();
 
         var app = builder.Build();
 

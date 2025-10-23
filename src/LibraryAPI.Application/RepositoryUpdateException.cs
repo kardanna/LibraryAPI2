@@ -1,4 +1,4 @@
-namespace LibraryAPI.Exceptions;
+namespace LibraryAPI.Application;
 
 public class RepositoryUpdateException : Exception
 {
