@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using LibraryAPI.Domain;
-using LibraryAPI.DTO.Book;
-using LibraryAPI.DTO.Book.Validators;
+using LibraryAPI.Application.DTO.Book;
+using LibraryAPI.Application.Validators.Book;
 using LibraryAPI.Data;
 using LibraryAPI.Exceptions;
 

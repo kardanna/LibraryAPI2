@@ -1,6 +1,7 @@
 using FluentValidation;
+using LibraryAPI.Application.DTO.Book;
 
-namespace LibraryAPI.DTO.Book.Validators;
+namespace LibraryAPI.Application.Validators.Book;
 
 public class CreateBookDtoValidator : AbstractValidator<CreateBookDto>
 {

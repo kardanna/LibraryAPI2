@@ -1,4 +1,4 @@
-namespace LibraryAPI.DTO.Book;
+namespace LibraryAPI.Application.DTO.Book;
 
 public class ReturnBookDto
 {

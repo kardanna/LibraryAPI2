@@ -1,4 +1,4 @@
-namespace LibraryAPI.DTO.Author;
+namespace LibraryAPI.Application.DTO.Author;
 
 public class CreateAuthorDto
 {

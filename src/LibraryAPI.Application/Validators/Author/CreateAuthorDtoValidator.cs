@@ -1,6 +1,7 @@
 using FluentValidation;
+using LibraryAPI.Application.DTO.Author;
 
-namespace LibraryAPI.DTO.Author.Validators;
+namespace LibraryAPI.Application.Validators.Author;
 
 public class CreateAuthorDtoValidator : AbstractValidator<CreateAuthorDto>
 {
