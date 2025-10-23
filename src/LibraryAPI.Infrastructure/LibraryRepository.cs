@@ -1,6 +1,6 @@
 using LibraryAPI.Domain;
 using System.Collections.Concurrent;
-using LibraryAPI.Application;
+using LibraryAPI.Application.Exceptions;
 using LibraryAPI.Application.Interfaces;
 
 namespace LibraryAPI.Infrastructure;
@@ -19,7 +19,7 @@ public class LibraryRepository : ILibraryRepository
 
         if (!Authors.TryAdd(id, entry))
         {
-            throw new RepositoryUpdateException($"Failed to add author '{entry.Name}'");
+            throw new RepositoryUpdateException(nameof(Author), RepositoryOperation.Add);
         }
 
         return entry.Id;
@@ -27,7 +27,7 @@ public class LibraryRepository : ILibraryRepository
 
     public void DeleteAuthor(int id)
     {
-        if (!Authors.ContainsKey(id)) throw new ArgumentException($"Author entry with ID {id} does not exist");
+        if (!Authors.ContainsKey(id)) throw new EntityDoesNotExistException(nameof(Author), id);
 
         var removedBooks = new Dictionary<int, Book>();
         var bookIdsToRemove = Books.Where(b => b.Value.AuthorId == id).Select(b => b.Value.Id);
@@ -44,7 +44,7 @@ public class LibraryRepository : ILibraryRepository
             {
                 Books.TryAdd(book.Value.Id, book.Value);
             }
-            throw new RepositoryUpdateException($"Failed to performe cascade delete of all books by author with ID {id}");
+            throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Delete); //RepositoryUpdateException($"Failed to performe cascade delete of all books by author with ID {id}");
         }
         
         if (!Authors.TryRemove(id, out _))
@@ -53,7 +53,7 @@ public class LibraryRepository : ILibraryRepository
             {
                 Books.TryAdd(book.Value.Id, book.Value);
             }
-            throw new RepositoryUpdateException($"Failed to delete author with ID {id}");
+            throw new RepositoryUpdateException(nameof(Author), RepositoryOperation.Delete); //RepositoryUpdateException($"Failed to delete author with ID {id}");
         }
     }
 
@@ -66,7 +66,7 @@ public class LibraryRepository : ILibraryRepository
     {
         if (!Authors.TryGetValue(id, out Author? value))
         {
-            throw new ArgumentException($"Failed to retrieve an author with ID {id}");
+            throw new EntityDoesNotExistException(nameof(Author), id);
         }
 
         return value.Clone();
@@ -76,7 +76,7 @@ public class LibraryRepository : ILibraryRepository
     {
         if (!Authors.TryGetValue(entry.Id, out Author? existingEntry))
         {
-            throw new ArgumentException($"Author entry with ID {entry.Id} does not exist");
+            throw new EntityDoesNotExistException(nameof(Author), entry.Id);
         }
 
         lock (existingEntry)
@@ -90,7 +90,7 @@ public class LibraryRepository : ILibraryRepository
     {
         if (!Authors.TryGetValue(entry.AuthorId, out Author? author))
         {
-            throw new ArgumentException($"No author with ID {entry.AuthorId}");
+            throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
         }
 
         int id = Interlocked.Increment(ref _booksSequence);
@@ -106,12 +106,12 @@ public class LibraryRepository : ILibraryRepository
             return entry.Id;
         }
         
-        throw new RepositoryUpdateException($"Failed to add book '{entry.Title}'");
+        throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Add); //RepositoryUpdateException($"Failed to add book '{entry.Title}'");
     }
 
     public void DeleteBook(int id)
     {
-        if (!Books.ContainsKey(id)) throw new ArgumentException($"Author entry with ID {id} does not exist");;
+        if (!Books.ContainsKey(id)) throw new EntityDoesNotExistException(nameof(Book), id);
 
         if (Books.TryRemove(id, out Book? book))
         {
@@ -122,7 +122,7 @@ public class LibraryRepository : ILibraryRepository
             return;
         }
         
-        throw new RepositoryUpdateException($"Failed to delete book with ID {id}");
+        throw new RepositoryUpdateException(nameof(Book), RepositoryOperation.Delete); //RepositoryUpdateException($"Failed to delete book with ID {id}");
     }
 
     public IEnumerable<Book> GetAllBooks()
@@ -134,7 +134,7 @@ public class LibraryRepository : ILibraryRepository
     {
         if (!Books.TryGetValue(id, out Book? value))
         {
-            throw new ArgumentException($"Failed to retrieve a book with ID {id}");
+            throw new EntityDoesNotExistException(nameof(Book), id);
         }
 
         return value.Clone();
@@ -142,14 +142,14 @@ public class LibraryRepository : ILibraryRepository
 
     public void UpdateBook(Book entry)
     {
-        if (!Authors.TryGetValue(entry.AuthorId, out Author? author))
-        {
-            throw new ArgumentException($"No author with ID {entry.AuthorId}");
-        }
-
         if (!Books.TryGetValue(entry.Id, out Book? existingEntry))
         {
-            throw new ArgumentException($"Book entry with ID {entry.Id} does not exist");
+            throw new EntityDoesNotExistException(nameof(Book), entry.Id);
+        }
+        
+        if (!Authors.TryGetValue(entry.AuthorId, out Author? author))
+        {
+            throw new EntityDoesNotExistException(nameof(Author), entry.AuthorId);
         }
 
         lock (existingEntry)

@@ -1,3 +1,4 @@
+using FluentValidation;
 using LibraryAPI.Application.DTO.Author;
 using LibraryAPI.Application.Interfaces;
 using LibraryAPI.Application.Validators.Author;
@@ -17,16 +18,7 @@ public class AuthorService : IAuthorService
     public ReturnAuthorDto AddAuthor(CreateAuthorDto entry)
     {
         var validator = new CreateAuthorDtoValidator();
-        var validationResult = validator.Validate(entry);
-        if(!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => new
-            {
-                errorCode = e.ErrorCode,
-                errorMessage = e.ErrorMessage
-            });
-            //return BadRequest(new { errors });
-        }
+        validator.ValidateAndThrow(entry);
 
         var author = new Author()
         {
@@ -36,38 +28,12 @@ public class AuthorService : IAuthorService
 
         _repository.AddAuthor(author);
 
-        /*try
-        {
-            author.Id = _repository.AddAuthor(author);
-        }
-        catch (RepositoryUpdateException e)
-        {
-            return StatusCode(500, new { errorMessage = e.Message });
-        }*/
-
-        return new ReturnAuthorDto(author);        
-        
-        //return CreatedAtAction(nameof(GetAuthor), new { id = author.Id }, returnAuthor);
+        return new ReturnAuthorDto(author);
     }
 
     public void DeleteAuthor(int id)
     {
         _repository.DeleteAuthor(id);
-        
-        /*try
-        {
-            _repository.DeleteAuthor(id);
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }
-        catch (RepositoryUpdateException e)
-        {
-            return StatusCode(500, new { errorMessage = e.Message });
-        }*/
-
-        //return NoContent();
     }
 
     public IEnumerable<ReturnAuthorDto> GetAllAuthors()
@@ -78,32 +44,13 @@ public class AuthorService : IAuthorService
 
     public ReturnAuthorDto GetAuthor(int id)
     {
-        /*ReturnAuthorDto author;
-        try
-        {
-            author = _repository.GetAuthor(id);
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }*/
-
         return new ReturnAuthorDto(_repository.GetAuthor(id));
     }
 
     public void UpdateAuthor(int id, CreateAuthorDto entry)
     {
         var validator = new CreateAuthorDtoValidator();
-        var validationResult = validator.Validate(entry);
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => new
-            {
-                errorCode = e.ErrorCode,
-                errorMessage = e.ErrorMessage
-            });
-            //return BadRequest(new { errors });
-        }
+        validator.ValidateAndThrow(entry);
 
         var author = new Author()
         {
@@ -113,16 +60,5 @@ public class AuthorService : IAuthorService
         };
 
         _repository.UpdateAuthor(author);
-
-        /*try
-        {
-            _repository.UpdateAuthor(author);
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }*/
-
-        //return NoContent();
     }
 }

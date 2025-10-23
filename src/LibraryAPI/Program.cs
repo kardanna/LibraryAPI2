@@ -1,6 +1,7 @@
 using LibraryAPI.Infrastructure;
 using LibraryAPI.Application.Interfaces;
 using LibraryAPI.Application.Services;
+using LibraryAPI.Middleware;
 
 namespace LibraryAPI;
 
@@ -32,6 +33,8 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
+
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.MapControllers();
 

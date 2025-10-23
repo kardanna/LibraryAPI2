@@ -1,3 +1,4 @@
+using FluentValidation;
 using LibraryAPI.Application.DTO.Book;
 using LibraryAPI.Application.Interfaces;
 using LibraryAPI.Application.Validators.Book;
@@ -17,16 +18,7 @@ public class BookService : IBookService
     public ReturnBookDto AddBook(CreateBookDto entry)
     {
         var validator = new CreateBookDtoValidator();
-        var validationResult = validator.Validate(entry);
-        if(!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => new
-            {
-                errorCode = e.ErrorCode,
-                errorMessage = e.ErrorMessage
-            });
-            //return BadRequest(new { errors });
-        }
+        validator.ValidateAndThrow(entry);
 
         var book = new Book()
         {
@@ -37,42 +29,12 @@ public class BookService : IBookService
         
         _repository.AddBook(book);
 
-        /*try
-        {
-            book.Id = _repository.AddBook(book);
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }
-        catch(RepositoryUpdateException e)
-        {
-            return StatusCode(500, new { errorMessage = e.Message });
-        }*/
-
         return new ReturnBookDto(book);
-         
-        //return CreatedAtAction("GetBook", new { id = book.Id }, returnBook);
     }
 
     public void DeleteBook(int id)
     {
         _repository.DeleteBook(id);
-
-        /*try
-        {
-            _repository.DeleteBook(id);
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }
-        catch (RepositoryUpdateException e)
-        {
-            return StatusCode(500, new { errorMessage = e.Message });
-        }*/
-
-        //return NoContent();
     }
 
     public IEnumerable<ReturnBookDto> GetAllBooks()
@@ -83,34 +45,13 @@ public class BookService : IBookService
 
     public ReturnBookDto GetBook(int id)
     {
-        //ReturnBookDto book;
-        //book = new ReturnBookDto(_repository.GetBook(id));
-
-        /*try
-        {
-            book = new ReturnBookDto(_repository.GetBook(id));
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }*/
-
         return new ReturnBookDto(_repository.GetBook(id));
     }
 
     public void UpdateBook(int id, CreateBookDto entry)
     {
         var validator = new CreateBookDtoValidator();
-        var validationResult = validator.Validate(entry);
-        if(!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => new
-            {
-                errorCode = e.ErrorCode,
-                errorMessage = e.ErrorMessage
-            });
-            //return BadRequest(new { errors });
-        }
+        validator.ValidateAndThrow(entry);
 
         var book = new Book()
         {
@@ -121,16 +62,5 @@ public class BookService : IBookService
         };
         
         _repository.UpdateBook(book);
-
-        /*try
-        {
-            _repository.UpdateBook(book);
-        }
-        catch (ArgumentException e)
-        {
-            return BadRequest(new { errorMessage = e.Message });
-        }*/
-
-        //return NoContent();
     }
 }
