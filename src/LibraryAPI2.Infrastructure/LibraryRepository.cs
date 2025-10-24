@@ -31,14 +31,14 @@ public class LibraryRepository : ILibraryRepository
     public async Task<IEnumerable<Author>> GetAllAuthors()
     {
         var authors = await _dbContext.Authors.Include(a => a.Books).ToListAsync();
-        return authors.Select(a => a.Clone());
+        return authors;
     }
 
     public async Task<Author> GetAuthor(int id)
     {
         var author = await _dbContext.Authors.FindAsync(id) ?? throw new EntityDoesNotExistException(nameof(Author), id);
         await _dbContext.Entry(author).Reference(a => a.Books).LoadAsync();
-        return author.Clone();
+        return author;
     }
 
     public async Task UpdateAuthor(Author entry)
@@ -69,14 +69,14 @@ public class LibraryRepository : ILibraryRepository
     public async Task<IEnumerable<Book>> GetAllBooks()
     {
         var books = await _dbContext.Books.Include(b => b.Author).ToListAsync();
-        return books.Select(b => b.Clone());
+        return books;
     }
 
     public async Task<Book> GetBook(int id)
     {
         var book = await _dbContext.Books.FindAsync(id) ?? throw new EntityDoesNotExistException(nameof(Book), id);
         await _dbContext.Entry(book).Reference(b => b.Author).LoadAsync();
-        return book.Clone();
+        return book;
     }
 
     public async Task UpdateBook(Book entry)

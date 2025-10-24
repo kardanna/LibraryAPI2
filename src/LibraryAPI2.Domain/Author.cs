@@ -6,15 +6,4 @@ public class Author
     public string Name { get; set; } = null!;
     public DateOnly DateOfBirth { get; set; }
     public virtual ICollection<Book> Books { get; set; } = new List<Book>();
-
-    public Author Clone()
-    {
-        return new Author()
-        {
-            Id = Id,
-            Name = Name,
-            DateOfBirth = DateOfBirth,
-            Books = Books.Select(b => b.Clone()).ToList()
-        };
-    }
 }

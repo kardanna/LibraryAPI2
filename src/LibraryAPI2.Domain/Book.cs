@@ -7,21 +7,4 @@ public class Book
     public int PublishedYear { get; set; }
     public int AuthorId { get; set; }
     public virtual Author Author { get; set; } = null!;
-
-    public Book Clone()
-    {
-        return new Book()
-        {
-            Id = Id,
-            Title = Title,
-            PublishedYear = PublishedYear,
-            AuthorId = AuthorId,
-            Author = new Author()
-            {
-                Id = Author.Id,
-                Name = Author.Name,
-                DateOfBirth = Author.DateOfBirth
-            }
-        };
-    }
 }
