@@ -4,9 +4,9 @@ namespace LibraryAPI2.Application.Services;
 
 public interface IAuthorService
 {
-    public IEnumerable<ReturnAuthorDto> GetAllAuthors();
-    public ReturnAuthorDto GetAuthor(int id);
-    public ReturnAuthorDto AddAuthor(CreateAuthorDto entry);
-    public void DeleteAuthor(int id);
-    public void UpdateAuthor(int id, CreateAuthorDto entry);
+    public Task<IEnumerable<ReturnAuthorDto>> GetAllAuthors();
+    public Task<ReturnAuthorDto> GetAuthor(int id);
+    public Task<ReturnAuthorDto> AddAuthor(CreateAuthorDto entry);
+    public Task DeleteAuthor(int id);
+    public Task UpdateAuthor(int id, CreateAuthorDto entry);
 }

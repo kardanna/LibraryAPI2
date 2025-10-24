@@ -15,10 +15,10 @@ public class AuthorService : IAuthorService
         _repository = repository;
     }
 
-    public ReturnAuthorDto AddAuthor(CreateAuthorDto entry)
+    public async Task<ReturnAuthorDto> AddAuthor(CreateAuthorDto entry)
     {
         var validator = new CreateAuthorDtoValidator();
-        validator.ValidateAndThrow(entry);
+        await validator.ValidateAndThrowAsync(entry);
 
         var author = new Author()
         {
@@ -26,31 +26,31 @@ public class AuthorService : IAuthorService
             DateOfBirth = entry.DateOfBirth
         };
 
-        _repository.AddAuthor(author);
+        await _repository.AddAuthor(author);
 
         return new ReturnAuthorDto(author);
     }
 
-    public void DeleteAuthor(int id)
+    public async Task DeleteAuthor(int id)
     {
-        _repository.DeleteAuthor(id);
+        await _repository.DeleteAuthor(id);
     }
 
-    public IEnumerable<ReturnAuthorDto> GetAllAuthors()
+    public async Task<IEnumerable<ReturnAuthorDto>> GetAllAuthors()
     {
-        var authors = _repository.GetAllAuthors().Select(a => new ReturnAuthorDto(a));
-        return authors;
+        var authors = await _repository.GetAllAuthors();
+        return authors.Select(a => new ReturnAuthorDto(a));;
     }
 
-    public ReturnAuthorDto GetAuthor(int id)
+    public async Task<ReturnAuthorDto> GetAuthor(int id)
     {
-        return new ReturnAuthorDto(_repository.GetAuthor(id));
+        return new ReturnAuthorDto(await _repository.GetAuthor(id));
     }
 
-    public void UpdateAuthor(int id, CreateAuthorDto entry)
+    public async Task UpdateAuthor(int id, CreateAuthorDto entry)
     {
         var validator = new CreateAuthorDtoValidator();
-        validator.ValidateAndThrow(entry);
+        await validator.ValidateAndThrowAsync(entry);
 
         var author = new Author()
         {
@@ -59,6 +59,6 @@ public class AuthorService : IAuthorService
             DateOfBirth = entry.DateOfBirth
         };
 
-        _repository.UpdateAuthor(author);
+        await _repository.UpdateAuthor(author);
     }
 }

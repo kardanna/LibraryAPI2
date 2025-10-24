@@ -16,35 +16,36 @@ namespace LibraryAPI2.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ReturnAuthorDto>> GetAuthors()
+        public async Task<ActionResult<IEnumerable<ReturnAuthorDto>>> GetAuthors()
         {
-            return _authorService.GetAllAuthors().ToList();
+            var authors = await _authorService.GetAllAuthors();
+            return authors.ToList();
         }
 
         [HttpGet("{id:int:min(1)}")]
-        public ActionResult<ReturnAuthorDto> GetAuthor(int id)
+        public async Task<ActionResult<ReturnAuthorDto>> GetAuthor(int id)
         {
-            return _authorService.GetAuthor(id);
+            return await _authorService.GetAuthor(id);
         }
 
         [HttpPut("{id:int:min(1)}")]
-        public IActionResult PutAuthor(int id, CreateAuthorDto authorDto)
+        public async Task<IActionResult> PutAuthor(int id, CreateAuthorDto authorDto)
         {
-            _authorService.UpdateAuthor(id, authorDto);
+            await _authorService.UpdateAuthor(id, authorDto);
             return NoContent();
         }
 
         [HttpPost]
-        public ActionResult<ReturnAuthorDto> PostAuthor(CreateAuthorDto authorDto)
+        public async Task<ActionResult<ReturnAuthorDto>> PostAuthor(CreateAuthorDto authorDto)
         {
-            var createdAuthor = _authorService.AddAuthor(authorDto);
+            var createdAuthor = await _authorService.AddAuthor(authorDto);
             return CreatedAtAction(nameof(GetAuthor), new { id = createdAuthor.Id }, createdAuthor);
         }
 
         [HttpDelete("{id:int:min(1)}")]
-        public IActionResult DeleteAuthor(int id)
+        public async Task<IActionResult> DeleteAuthor(int id)
         {
-            _authorService.DeleteAuthor(id);
+            await _authorService.DeleteAuthor(id);
             return NoContent();
         }
     }

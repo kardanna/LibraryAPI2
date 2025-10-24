@@ -7,8 +7,6 @@ public class Author
     public DateOnly DateOfBirth { get; set; }
     public virtual ICollection<Book> Books { get; set; } = new List<Book>();
 
-    public readonly object EntityLock = new();
-
     public Author Clone()
     {
         return new Author()

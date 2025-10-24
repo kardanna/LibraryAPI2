@@ -15,10 +15,10 @@ public class BookService : IBookService
         _repository = repository;
     }
 
-    public ReturnBookDto AddBook(CreateBookDto entry)
+    public async Task<ReturnBookDto> AddBook(CreateBookDto entry)
     {
         var validator = new CreateBookDtoValidator();
-        validator.ValidateAndThrow(entry);
+        await validator.ValidateAndThrowAsync(entry);
 
         var book = new Book()
         {
@@ -27,31 +27,31 @@ public class BookService : IBookService
             AuthorId = entry.AuthorId
         };
         
-        _repository.AddBook(book);
+        await _repository.AddBook(book);
 
         return new ReturnBookDto(book);
     }
 
-    public void DeleteBook(int id)
+    public async Task DeleteBook(int id)
     {
-        _repository.DeleteBook(id);
+        await _repository.DeleteBook(id);
     }
 
-    public IEnumerable<ReturnBookDto> GetAllBooks()
+    public async Task<IEnumerable<ReturnBookDto>> GetAllBooks()
     {
-        var books = _repository.GetAllBooks().Select(b => new ReturnBookDto(b));
-        return books;
+        var books = await _repository.GetAllBooks();
+        return books.Select(b => new ReturnBookDto(b));;
     }
 
-    public ReturnBookDto GetBook(int id)
+    public async Task<ReturnBookDto> GetBook(int id)
     {
-        return new ReturnBookDto(_repository.GetBook(id));
+        return new ReturnBookDto(await _repository.GetBook(id));
     }
 
-    public void UpdateBook(int id, CreateBookDto entry)
+    public async Task UpdateBook(int id, CreateBookDto entry)
     {
         var validator = new CreateBookDtoValidator();
-        validator.ValidateAndThrow(entry);
+        await validator.ValidateAndThrowAsync(entry);
 
         var book = new Book()
         {
@@ -61,6 +61,6 @@ public class BookService : IBookService
             AuthorId = entry.AuthorId
         };
         
-        _repository.UpdateBook(book);
+        await _repository.UpdateBook(book);
     }
 }

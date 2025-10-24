@@ -4,14 +4,14 @@ namespace LibraryAPI2.Application.Interfaces;
 
 public interface ILibraryRepository
 {
-    public IEnumerable<Book> GetAllBooks();
-    public Book GetBook(int id);
-    public int AddBook(Book entry);
-    public void DeleteBook(int id);
-    public void UpdateBook(Book entry);
-    public IEnumerable<Author> GetAllAuthors();
-    public Author GetAuthor(int id);
-    public int AddAuthor(Author entry);
-    public void DeleteAuthor(int id);
-    public void UpdateAuthor(Author entry);
+    public Task<IEnumerable<Book>> GetAllBooks();
+    public Task<Book> GetBook(int id);
+    public Task<int> AddBook(Book entry);
+    public Task DeleteBook(int id);
+    public Task UpdateBook(Book entry);
+    public Task<IEnumerable<Author>> GetAllAuthors();
+    public Task<Author> GetAuthor(int id);
+    public Task<int> AddAuthor(Author entry);
+    public Task DeleteAuthor(int id);
+    public Task UpdateAuthor(Author entry);
 }

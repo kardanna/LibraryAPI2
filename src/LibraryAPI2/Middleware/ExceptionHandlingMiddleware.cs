@@ -1,5 +1,6 @@
 using LibraryAPI2.Application.Exceptions;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryAPI2.Middleware;
 
@@ -30,6 +31,7 @@ public class ExceptionHandlingMiddleware
         {
             EntityDoesNotExistException => StatusCodes.Status404NotFound,
             ValidationException => StatusCodes.Status400BadRequest,
+            DbUpdateException => StatusCodes.Status510NotExtended, // REMOVE!!!
             _ => StatusCodes.Status500InternalServerError
         };
 

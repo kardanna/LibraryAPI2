@@ -4,9 +4,9 @@ namespace LibraryAPI2.Application.Services;
 
 public interface IBookService
 {
-    public IEnumerable<ReturnBookDto> GetAllBooks();
-    public ReturnBookDto GetBook(int id);
-    public ReturnBookDto AddBook(CreateBookDto entry);
-    public void DeleteBook(int id);
-    public void UpdateBook(int id, CreateBookDto entry);
+    public Task<IEnumerable<ReturnBookDto>> GetAllBooks();
+    public Task<ReturnBookDto> GetBook(int id);
+    public Task<ReturnBookDto> AddBook(CreateBookDto entry);
+    public Task DeleteBook(int id);
+    public Task UpdateBook(int id, CreateBookDto entry);
 }

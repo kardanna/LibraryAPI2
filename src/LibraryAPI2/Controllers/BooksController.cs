@@ -16,35 +16,36 @@ namespace LibraryAPI2.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ReturnBookDto>> GetBooks()
+        public async Task<ActionResult<IEnumerable<ReturnBookDto>>> GetBooks()
         {
-            return _bookService.GetAllBooks().ToList();
+            var books = await _bookService.GetAllBooks();
+            return books.ToList();
         }
 
         [HttpGet("{id:int:min(1)}")]
-        public ActionResult<ReturnBookDto> GetBook(int id)
+        public async Task<ActionResult<ReturnBookDto>> GetBook(int id)
         {
-            return _bookService.GetBook(id);
+            return await _bookService.GetBook(id);
         }
 
         [HttpPut("{id:int:min(1)}")]
-        public IActionResult PutBook(int id, CreateBookDto bookDto)
+        public async Task<IActionResult> PutBook(int id, CreateBookDto bookDto)
         {
-            _bookService.UpdateBook(id, bookDto);
+            await _bookService.UpdateBook(id, bookDto);
             return NoContent();
         }
 
         [HttpPost]
-        public ActionResult<ReturnBookDto> PostBook(CreateBookDto bookDto)
+        public async Task<ActionResult<ReturnBookDto>> PostBook(CreateBookDto bookDto)
         {
-            var createdBook = _bookService.AddBook(bookDto);
+            var createdBook = await _bookService.AddBook(bookDto);
             return CreatedAtAction(nameof(GetBook), new { id = createdBook.Id }, createdBook);
         }
 
         [HttpDelete("{id:int:min(1)}")]
-        public IActionResult DeleteBook(int id)
+        public async Task<IActionResult> DeleteBook(int id)
         {
-            _bookService.DeleteBook(id);
+            await _bookService.DeleteBook(id);
             return NoContent();
         }
     }

@@ -1,7 +1,8 @@
 using LibraryAPI2.Infrastructure;
-using LibraryAPI2.Application.Interfaces;
 using LibraryAPI2.Application.Services;
 using LibraryAPI2.Middleware;
+using Microsoft.EntityFrameworkCore;
+using LibraryAPI2.Application.Interfaces;
 
 namespace LibraryAPI2;
 
@@ -16,8 +17,11 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        
-        builder.Services.AddSingleton<ILibraryRepository, LibraryRepository>();
+
+        builder.Services.AddDbContext<LibraryContext>(opt =>
+            opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+        );
+        builder.Services.AddTransient<ILibraryRepository, LibraryRepository>();
         builder.Services.AddTransient<IBookService, BookService>();
         builder.Services.AddTransient<IAuthorService, AuthorService>();
 
