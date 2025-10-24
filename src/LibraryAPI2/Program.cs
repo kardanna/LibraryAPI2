@@ -21,9 +21,9 @@ public class Program
         builder.Services.AddDbContext<LibraryContext>(opt =>
             opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
         );
-        builder.Services.AddTransient<ILibraryRepository, LibraryRepository>();
-        builder.Services.AddTransient<IBookService, BookService>();
-        builder.Services.AddTransient<IAuthorService, AuthorService>();
+        builder.Services.AddScoped<ILibraryRepository, LibraryRepository>();
+        builder.Services.AddScoped<IBookService, BookService>();
+        builder.Services.AddScoped<IAuthorService, AuthorService>();
 
         var app = builder.Build();
 

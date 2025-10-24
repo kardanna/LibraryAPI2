@@ -31,7 +31,6 @@ public class ExceptionHandlingMiddleware
         {
             EntityDoesNotExistException => StatusCodes.Status404NotFound,
             ValidationException => StatusCodes.Status400BadRequest,
-            DbUpdateException => StatusCodes.Status510NotExtended, // REMOVE!!!
             _ => StatusCodes.Status500InternalServerError
         };
 
