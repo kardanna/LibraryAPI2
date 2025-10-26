@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using LibraryAPI2.Application.DTO.Author;
 using LibraryAPI2.Application.Services;
+using LibraryAPI2.Application.Common;
+using LibraryAPI2.Application.Exceptions;
 
 namespace LibraryAPI2.Controllers
 {
@@ -16,9 +18,9 @@ namespace LibraryAPI2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReturnAuthorDto>>> GetAuthors()
+        public async Task<ActionResult<IEnumerable<ReturnAuthorDto>>> GetAuthors([FromQuery] AuthorQueryParameters? query)
         {
-            var authors = await _authorService.GetAllAuthors();
+            var authors = await _authorService.GetAllAuthors(query);
             return authors.ToList();
         }
 

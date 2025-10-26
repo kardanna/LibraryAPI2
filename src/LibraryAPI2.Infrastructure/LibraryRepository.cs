@@ -2,6 +2,8 @@ using LibraryAPI2.Domain;
 using LibraryAPI2.Application.Exceptions;
 using LibraryAPI2.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using LinqKit;
 
 namespace LibraryAPI2.Infrastructure;
 
@@ -28,13 +30,17 @@ public class LibraryRepository : ILibraryRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Author>> GetAllAuthors()
+    public async Task<IEnumerable<Author>> GetAllAuthors(Expression<Func<Author, bool>>? filteringPredicate, Func<IQueryable<Author>, IOrderedQueryable<Author>>? orderingDelegate)
     {
-        var authors = await _dbContext.Authors
+        IQueryable<Author> authors = _dbContext.Authors
             .Include(a => a.Books)
-            .AsNoTracking()
-            .ToListAsync();
-        return authors;
+            .AsExpandable()
+            .AsNoTracking();
+
+        if (filteringPredicate != null) authors = authors.Where(filteringPredicate);
+        if (orderingDelegate != null) authors = orderingDelegate(authors);
+
+        return await authors.ToListAsync();
     }
 
     public async Task<Author> GetAuthor(int id)
@@ -75,13 +81,17 @@ public class LibraryRepository : ILibraryRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Book>> GetAllBooks()
+    public async Task<IEnumerable<Book>> GetAllBooks(Expression<Func<Book, bool>>? filteringPredicate, Func<IQueryable<Book>, IOrderedQueryable<Book>>? orderingDelegate)
     {
-        var books = await _dbContext.Books
+        var books = _dbContext.Books
             .Include(b => b.Author)
-            .AsNoTracking()
-            .ToListAsync();
-        return books;
+            .AsExpandable()
+            .AsNoTracking();
+
+        if (filteringPredicate != null) books = books.Where(filteringPredicate);
+        if (orderingDelegate != null) books = orderingDelegate(books);
+        
+        return await books.ToListAsync(); ;
     }
 
     public async Task<Book> GetBook(int id)

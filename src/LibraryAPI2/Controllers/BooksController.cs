@@ -16,9 +16,9 @@ namespace LibraryAPI2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReturnBookDto>>> GetBooks()
+        public async Task<ActionResult<IEnumerable<ReturnBookDto>>> GetBooks([FromQuery] BookQueryParameters? query)
         {
-            var books = await _bookService.GetAllBooks();
+            var books = await _bookService.GetAllBooks(query);
             return books.ToList();
         }
 

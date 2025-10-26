@@ -4,7 +4,7 @@ namespace LibraryAPI2.Application.Services;
 
 public interface IBookService
 {
-    public Task<IEnumerable<ReturnBookDto>> GetAllBooks();
+    public Task<IEnumerable<ReturnBookDto>> GetAllBooks(BookQueryParameters? query);
     public Task<ReturnBookDto> GetBook(int id);
     public Task<ReturnBookDto> AddBook(CreateBookDto entry);
     public Task DeleteBook(int id);
